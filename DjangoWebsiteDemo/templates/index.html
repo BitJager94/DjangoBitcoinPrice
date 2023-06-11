@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Test</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    </head>
+    <body>
+        <div class="container">
+            <div class="col-md-12 col-lg-5 col-xl-4 m-auto mt-3">
+                <div class="card">
+                    <div class="card-body p-5">
+                        <h5 class="card-title">Bitcoin Price Chart</h5>
+
+                        <div class="form-group">
+                            <div class="form-group">
+                                <label for="fromDate">From Date</label>
+                                <input type="date" id="fromDate" class="form-control mt-2">
+                            </div>
+                            <div class="form-group">
+                                <label for="fromDate">To Date</label>
+                                <input type="date" id="toDate" class="form-control mt-2">
+                            </div>
+                            <button id="fetch" class="btn btn-primary mt-2 w-100">Fetch</button>
+                        </div>
+                        
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+        
+        
+        <canvas id="bitCoinChart"></canvas>
+    </body>
+</html>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+<script
+  src="https://code.jquery.com/jquery-3.7.0.js"
+  integrity="sha256-JlqSTELeR4TLqP0OG9dxM7yDPqX1ox/HfgiSLBj8+kM="
+  crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js"></script>
+
+
+<script>
+    let chart_loaded = false;
+    let chart = null;
+
+    $(document).ready(() => {
+
+        $('#fetch').on('click', (e) => {
+            
+            let start_date = $('#fromDate').val() ? $('#fromDate').val() : "";
+            let end_date = $("#toDate").val() ? $("#toDate").val() : "";
+            let validation_res = validateDates(start_date, end_date);
+            
+            if(validation_res)
+            {
+                let url = `https://api.coindesk.com/v1/bpi/historical/close.json?start=${start_date == "" ? '2021-10-20' : start_date}&end=${end_date == "" ? '2022-10-20' : end_date}`;
+
+                $.ajax({
+                    url: url,
+                    method:'GET',
+                    dataType: 'json',
+                    success: (data) => {
+                        drawChart(data)
+                    },
+                    error: (a,b,c) => {
+                        console.log(a.responseText)
+                    }
+                })
+            }
+            
+        })
+    })
+  
+
+    function validateDates(start_date, end_date)
+    {
+        if (start_date && end_date) 
+        {
+            // Calculate the time difference in milliseconds between start_date and end_date
+            const timeDiff = new Date(end_date) - new Date(start_date);
+
+            // Calculate the time difference in days
+            const timeDiffDays = timeDiff / (1000 * 60 * 60 * 24);
+
+            // Check if the time difference is 200 days
+            if (timeDiffDays >= 200) {
+                // Check if last_date is at least 3 months old
+                const last_date = new Date(end_date);
+                const threeMonthsAgo = new Date();
+                threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+
+                if (last_date > threeMonthsAgo) 
+                {
+                    alert('End date should be at least 3 months old')
+                    return false
+                }
+
+            } 
+            else 
+            {
+                // Time difference is not 200 days
+                alert('The period between start and end date should be more than 200 days')
+                return false;
+            }
+        }
+
+        return true
+    }
+
+
+    function drawChart(data)
+    {
+        const formattedPrices = Object.entries(data.bpi).map(function(entry) {
+        const date = entry[0];
+        const price = entry[1];
+        const formattedDate = moment(new Date(date)).format('MM/D/YYYY');
+
+            return {
+                date: formattedDate,
+                price: price
+            };
+        });
+
+        const canvas = document.getElementById('bitCoinChart');
+        
+        const dates = formattedPrices.map(entry => entry.date);
+        const bitcoinPrices = formattedPrices.map(entry => entry.price);
+        
+        if(chart != null)
+        {
+            chart.destroy();
+        }
+
+        chart = new Chart(canvas, 
+        {
+            type: 'line',
+            data: {
+                labels: dates,
+                datasets: [{
+                label: 'Bitcoin Price',
+                data: bitcoinPrices,
+                fill: false,
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.1
+                }]
+            },
+            options: 
+            {
+                responsive: true,
+                scales: 
+                {
+                    x: {
+                        display: true,
+                        title: {
+                        display: true,
+                        text: 'Date'
+                        }
+                    },
+                    y: {
+                        display: true,
+                        title: {
+                        display: true,
+                        text: 'Price (USD)'
+                        }
+                    }
+                }
+            }
+        });
+    }
+</script>
