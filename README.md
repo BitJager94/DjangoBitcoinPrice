@@ -11,9 +11,7 @@ Welcome to the documentation for the Django Bitcoin Price Chart project. This do
 5. [Fetching Bitcoin Price Data](#fetching-bitcoin-price-data)
 6. [Chart Rendering](#chart-rendering)
 7. [Frontend](#frontend)
-8. [Testing](#testing)
-9. [Deployment](#deployment)
-10. [Additional Resources](#additional-resources)
+8. [Additional Resources](#additional-resources)
 
 ## Getting Started
 
@@ -86,8 +84,6 @@ The project utilizes the following configuration files:
 Please review these files to configure the project according to your needs.
 
 ## Fetching Bitcoin Price Data
-
-To fetch Bitcoin price data, the project uses a third-party API. The documentation for the API can be found at [API Documentation](https://example-api.com/docs).
 
 Refer to the `DjangoWebsiteDemo/templates/index.html` file in the project for an example of how to fetch and process Bitcoin price data using the API.
 
